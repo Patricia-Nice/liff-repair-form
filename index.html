@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แจ้งซ่อม</title>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            color: #00B900;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        textarea,
+        select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        button {
+            background-color: #00B900;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #008C00;
+        }
+        #statusMessage {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .loading {
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>แจ้งซ่อม</h1>
+        <form id="repairForm">
+            <label for="room">เลขห้อง:</label>
+            <input type="text" id="room" placeholder="ตัวอย่าง: 101" required>
+
+            <label for="issueType">ประเภทของปัญหา:</label>
+            <select id="issueType" required>
+                <option value="">-- เลือกประเภท --</option>
+                <option value="ไฟฟ้า">ไฟฟ้า</option>
+                <option value="ประปา">ประปา</option>
+                <option value="แอร์">แอร์</option>
+                <option value="สุขภัณฑ์">สุขภัณฑ์</option>
+                <option value="โครงสร้าง/ผนัง">โครงสร้าง/ผนัง</option>
+                <option value="อื่นๆ">อื่นๆ</option>
+            </select>
+
+            <label for="description">รายละเอียดปัญหา:</label>
+            <textarea id="description" placeholder="กรุณาอธิบายปัญหาโดยละเอียด" required></textarea>
+
+            <label for="imageUpload">รูปภาพประกอบ (ถ้ามี):</label>
+            <input type="file" id="imageUpload" accept="image/*">
+
+            <button type="submit" id="submitBtn">ส่งแจ้งซ่อม</button>
+        </form>
+        <div id="statusMessage"></div>
+    </div>
+
+    <script src="script.js"></script> </body>
+</html>
