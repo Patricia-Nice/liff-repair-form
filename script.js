@@ -1,7 +1,7 @@
 // ** แทนที่ด้วย LIFF ID ของคุณที่ได้จาก LINE Developers Console **
 const LIFF_ID = '2007631869-VYv1L1G6'; 
 // ** แทนที่ด้วย Web app URL ของ Google Apps Script ที่คุณ Deploy ไว้ **
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyEFOQPEeAF0nUDi55LBSC5WEALHMVfHhYbWED5bDxYyeBfoFx6DZq3NoYCr11bin72/exec'; 
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzAr7W9IvvmmN2mtTuBjHsTPPrlyhzRFtU0bIgsMTiVKd3V9IRk6u_i4SRFuWtFr09p/exec'; 
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('repairForm');
