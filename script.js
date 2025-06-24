@@ -1,5 +1,5 @@
 // ** แทนที่ด้วย LIFF ID ของคุณที่ได้จาก LINE Developers Console **
-const LIFF_ID = 'To5egBdri90/YhFSGmrrTk3WdgZtU9GZtqlCuVBhrWfntugYCFwMF4fub+FlWgkloU88OBU27t8gdpqH4Ol7R+WHtCO3My2UQS1prI1LvTsJ6nPNhpsIoUy7zfzF+i8xu5Ep6T+blbETW56HhJSjYgdB04t89/1O/w1cDnyilFU='; 
+const LIFF_ID = '2007631869-VYv1L1G6'; 
 // ** แทนที่ด้วย Web app URL ของ Google Apps Script ที่คุณ Deploy ไว้ **
 const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyEFOQPEeAF0nUDi55LBSC5WEALHMVfHhYbWED5bDxYyeBfoFx6DZq3NoYCr11bin72/exec'; 
 
