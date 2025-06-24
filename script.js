@@ -1,123 +1,132 @@
 // ** แทนที่ด้วย LIFF ID ของคุณที่ได้จาก LINE Developers Console **
-const LIFF_ID = '2007632351-g9D1mP18'; 
+const LIFF_ID = '2007632351-g9D1mP18'; // ตัวอย่าง: '200xxxxxxx-xxxxxxxx'
 // ** แทนที่ด้วย Web app URL ของ Google Apps Script ที่คุณ Deploy ไว้ **
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxU7x-G4__RQsIEz6IuOzFpgrU1M5TNaG-gIpLjcXOPRH0lCa33oFkBI1CAhXfUEiwS/exec'; 
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxU7x-G4__RQsIEz6IuOzFpgrU1M5TNaG-gIpLjcXOPRH0lCa33oFkBI1CAhXfUEiwS/exec'; // ตัวอย่าง: 'https://script.google.com/macros/s/AKfycbxxxxxxx/exec'
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('repairForm');
     const submitBtn = document.getElementById('submitBtn');
     const statusMessage = document.getElementById('statusMessage');
+    const imageUploadInput = document.getElementById('imageUpload'); // อ้างอิงถึง input file
 
     // 1. Initialize LIFF
     liff.init({
         liffId: LIFF_ID
     })
     .then(() => {
-        console.log('LIFF initialized');
+        console.log('LIFF initialized successfully.');
         if (!liff.isLoggedIn()) {
             liff.login(); // Force login if not logged in
+        } else {
+            // LIFF พร้อมใช้งานแล้ว
+            // สามารถเพิ่มโค้ดที่ต้องการรันหลังจาก LIFF init และ login สำเร็จที่นี่ได้
         }
-        // Optional: Populate room number if available from LINE profile (e.g., if you store it in LINE profile)
-        // Or get userId for later use
     })
     .catch((err) => {
-        console.error('LIFF initialization failed', err);
-        statusMessage.textContent = 'เกิดข้อผิดพลาดในการโหลด LIFF: ' + err.message;
+        console.error('LIFF initialization failed:', err);
+        statusMessage.textContent = `เกิดข้อผิดพลาดในการโหลด LIFF: ${err.message}. กรุณาลองใหม่ในภายหลัง.`;
         statusMessage.className = 'status error';
+        submitBtn.disabled = true; // ปิดปุ่มหาก LIFF มีปัญหา
     });
 
-    form.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent default form submission
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault(); // ป้องกันการ Submit ฟอร์มแบบปกติ
 
         submitBtn.disabled = true;
         statusMessage.textContent = 'กำลังส่งข้อมูล...';
         statusMessage.className = 'status loading';
 
-        // Get form data
-        const room = document.getElementById('room').value;
-        const issueType = document.getElementById('issueType').value;
-        const description = document.getElementById('description').value;
-        const imageFile = document.getElementById('imageUpload').files[0];
+        // ดึงข้อมูลจากฟอร์ม
+        const room = document.getElementById('room').value.trim();
+        const issueType = document.getElementById('issueType').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const imageFile = imageUploadInput.files[0];
 
-        let imageDataUrl = '';
+        // ตรวจสอบข้อมูลเบื้องต้น
+        if (!room || !issueType || !description) {
+            statusMessage.textContent = 'กรุณากรอกข้อมูลห้อง, ประเภทปัญหา และรายละเอียดให้ครบถ้วน';
+            statusMessage.className = 'status error';
+            submitBtn.disabled = false;
+            return; // หยุดการทำงาน
+        }
 
-        const sendDataToGAS = (imgUrl = '') => {
-            // Get LIFF user ID
-            liff.getProfile()
-            .then(profile => {
-                const liffUserId = profile.userId;
+        try {
+            // ดึง LIFF user ID
+            const profile = await liff.getProfile();
+            const liffUserId = profile.userId;
 
-                const dataToSend = {
-                    room: room,
-                    issueType: issueType,
-                    description: description,
-                    imageURL: imgUrl, // Will be empty string if no image or upload failed
-                    liffUserId: liffUserId // Send LIFF user ID to GAS
-                };
+            let imageDataUrl = ''; // สำหรับเก็บ Base64 ของรูปภาพ
 
-                // Send data to Google Apps Script
-                fetch(GAS_WEB_APP_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(dataToSend)
-                })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.status === 'success') {
-                        statusMessage.textContent = result.message;
-                        statusMessage.className = 'status success';
-                        form.reset(); // Clear form after successful submission
-                        // Close LIFF window if submission is successful
-                        if (liff.isInClient()) {
-                            liff.closeWindow();
-                        }
-                    } else {
-                        statusMessage.textContent = result.message;
-                        statusMessage.className = 'status error';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error sending data to GAS:', error);
-                    statusMessage.textContent = 'เกิดข้อผิดพลาดในการส่งข้อมูล: ' + error.message;
-                    statusMessage.className = 'status error';
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                });
-            })
-            .catch(err => {
-                console.error('Error getting LIFF profile:', err);
-                statusMessage.textContent = 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้: ' + err.message;
-                statusMessage.className = 'status error';
-                submitBtn.disabled = false;
+            // จัดการอัปโหลดรูปภาพ (ถ้ามี)
+            if (imageFile) {
+                statusMessage.textContent = 'กำลังอัปโหลดรูปภาพ...';
+                statusMessage.className = 'status loading';
+                imageDataUrl = await readFileAsDataURL(imageFile);
+                // ในอนาคต, ควรส่ง Base64 นี้ไปยัง GAS อีกฟังก์ชัน เพื่ออัปโหลดขึ้น Google Drive หรือ Cloud Storage อื่นๆ
+                // แล้วส่ง URL ที่ได้กลับมาแทน Base64 เพื่อลดภาระของ Google Sheet
+                console.warn('Note: Image is sent as Base64. For production, consider using a dedicated image upload service or Google Drive API.');
+            }
+
+            const dataToSend = {
+                room: room,
+                issueType: issueType,
+                description: description,
+                imageURL: imageDataUrl, // จะเป็น Base64 หรือ String ว่าง
+                liffUserId: liffUserId
+            };
+
+            // ส่งข้อมูลไปยัง Google Apps Script
+            const response = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dataToSend)
             });
-        };
 
-        // Handle image upload if a file is selected
-        if (imageFile) {
-            const reader = new FileReader();
-            reader.onloadend = function() {
-                // This is a base64 encoded string of the image.
-                // IMPORTANT: Directly sending base64 to Google Sheet is NOT recommended for large images.
-                // For a robust solution, you would upload this base64 to a cloud storage (e.g., Google Drive via another GAS function, or Cloudinary)
-                // and get a publicly accessible URL, then send that URL to GAS.
-                // For this basic example, we'll just send the base64 string, but it might hit URL limits if too large.
-                // A better approach would be to have a separate GAS function to receive base64, save to Drive, and return URL.
-                imageDataUrl = reader.result; 
-                alert('Note: Image will be sent as Base64. For production, consider uploading to cloud storage first.'); // Acknowledge limitation
-                sendDataToGAS(imageDataUrl); // Send data with base64 image
-            };
-            reader.onerror = function(error) {
-                console.error("Error reading file:", error);
-                statusMessage.textContent = 'เกิดข้อผิดพลาดในการอ่านรูปภาพ';
+            // ตรวจสอบสถานะ HTTP response
+            if (!response.ok) {
+                // หากเซิร์ฟเวอร์ตอบกลับมาด้วยสถานะ HTTP error (เช่น 404, 500)
+                const errorBody = await response.text(); // อ่าน response body เพื่อดูรายละเอียด error
+                throw new Error(`HTTP error! Status: ${response.status}. Details: ${errorBody}`);
+            }
+
+            const result = await response.json(); // แปลง response เป็น JSON
+
+            // จัดการการตอบกลับจาก GAS (success/error message)
+            if (result.status === 'success') {
+                statusMessage.textContent = result.message;
+                statusMessage.className = 'status success';
+                form.reset(); // ล้างฟอร์ม
+                // ล้างไฟล์ที่เลือกใน input type="file"
+                imageUploadInput.value = ''; 
+                // ปิด LIFF window หากอยู่ใน LINE
+                if (liff.isInClient()) {
+                    liff.closeWindow();
+                }
+            } else {
+                // กรณีที่ GAS ประมวลผลแต่มี error กลับมา
+                statusMessage.textContent = `เกิดข้อผิดพลาดจากระบบ: ${result.message}`;
                 statusMessage.className = 'status error';
-                submitBtn.disabled = false;
-            };
-            reader.readAsDataURL(imageFile); // Read file as Data URL (base64)
-        } else {
-            sendDataToGAS(); // Send data without image
+            }
+
+        } catch (error) {
+            // จัดการข้อผิดพลาดที่เกิดขึ้นระหว่าง fetch (เช่น Network error, CORS, JSON parse error)
+            console.error('Error during form submission:', error);
+            statusMessage.textContent = `เกิดข้อผิดพลาดในการส่งข้อมูล: ${error.message}. กรุณาลองใหม่อีกครั้ง.`;
+            statusMessage.className = 'status error';
+        } finally {
+            submitBtn.disabled = false; // เปิดปุ่ม Submit กลับคืน
         }
     });
+
+    // Helper function สำหรับอ่านไฟล์รูปภาพเป็น Base64
+    function readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
 });
