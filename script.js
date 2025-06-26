@@ -1,6 +1,6 @@
 // === กำหนดค่า LIFF และ GAS Web App URL ===
 const LIFF_ID = '2007632351-g9D1mP18'; // 
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby0AM7NTCFlmEH1Pkf0Qq_8ZfqgeaqyVoe0zGmEdYeT-oWaWjNRL-NE8UGjzbBReUBw/exec';
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxdx3-TN8a2oNw9flXHOKokCkJ6YRDaebIIad7Pgl2ehzyIvJWU51i-4MmmfAz6sSk/exec';
 
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('repairForm');
